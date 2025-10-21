@@ -1,0 +1,66 @@
+#%RAML 1.0
+title: SFTP System API
+version: v1
+baseUri: http://localhost:8081
+mediaType: application/json
+
+description: |
+  SFTP System API for writing to 4 different SFTP servers
+  based on the system parameter.
+
+types:
+  FileRequest:
+    type: object
+    properties:
+      fileName: string
+      content: string
+    example:
+      fileName: "data.csv"
+      content: "SGVsbG8gV29ybGQ="
+
+  FileResponse:
+    type: object
+    properties:
+      status: 
+        type: string
+        enum: [success, error]
+      message: string
+    example:
+      status: "success"
+      message: "File uploaded successfully"
+
+  ErrorResponse:
+    type: object
+    properties:
+      code: string
+      message: string
+    example:
+      code: "VALIDATION_ERROR"
+      message: "Invalid system parameter"
+
+/api/{system}:
+  uriParameters:
+    system:
+      type: string
+      enum: [cordillera, fusion, sirius, u2k2]
+      description: Target SFTP system
+      example: "cordillera"
+  
+  post:
+    description: Upload file to specified SFTP system
+    body:
+      application/json:
+        type: FileRequest
+    responses:
+      200:
+        body:
+          application/json:
+            type: FileResponse
+      400:
+        body:
+          application/json:
+            type: ErrorResponse
+      500:
+        body:
+          application/json:
+            type: ErrorResponse

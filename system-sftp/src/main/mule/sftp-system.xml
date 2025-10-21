@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd">
+    <http:listener-config name="sftp-system-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+    <apikit:config name="sftp-system-config" api="sftp-system.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <sftp:config name="SFTP_Config" doc:name="SFTP Config" doc:id="0d68f532-aebc-459b-bbf4-5fdc5adcfcd4" >
+		<sftp:connection workingDir="/" host="localhost" port="#[vars.port]" username="#[vars.user]" password="pass" />
+	</sftp:config>
+	<flow name="sftp-system-main">
+        <http:listener config-ref="sftp-system-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="sftp-system-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="post:\api\(system):application\json:sftp-system-config">
+		<set-variable value="#[payload.fileName]" doc:name="Set Variable" doc:id="a99db77a-8bfb-4d3b-9b9e-a47f96cd4b33" variableName="fileName" />
+		<ee:transform doc:name="json to csv" doc:id="8ebfe422-3ce9-4de6-b914-c335d54e3bf2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/csv
+---
+payload.content]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="7ddd30e8-c6ad-4a5d-a128-f4299099380b" >
+			<when expression='#[payload.system == "u2k2"]'>
+				<ee:transform doc:name="Transform Message" doc:id="11102e75-b28f-45ba-b747-e15764df1c44" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="port" ><![CDATA[22001]]></ee:set-variable>
+						<ee:set-variable variableName="user" ><![CDATA["u2k2user"]]></ee:set-variable>
+						<ee:set-variable variableName="password" ><![CDATA["u2k2pass"]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</when>
+			<when expression='#[payload.system == "cordillera"]'>
+				<ee:transform doc:name="Transform Message" doc:id="a7095d8f-acdc-4b5d-8a47-f15380df6ef3" >
+					<ee:message />
+					<ee:variables >
+						<ee:set-variable variableName="port" ><![CDATA[22002]]></ee:set-variable>
+						<ee:set-variable variableName="user" ><![CDATA["cordillerauser"]]></ee:set-variable>
+						<ee:set-variable variableName="password" ><![CDATA["cordillerapass"]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</when>
+			<when expression='#[payload.system == "sirius"]'>
+				<ee:transform doc:name="Transform Message" doc:id="b93c6c11-bb39-4515-a47f-f12048ebd6f9" >
+					<ee:message />
+					<ee:variables >
+						<ee:set-variable variableName="port" ><![CDATA[22003]]></ee:set-variable>
+						<ee:set-variable variableName="user" ><![CDATA["siriususer"]]></ee:set-variable>
+						<ee:set-variable variableName="password" ><![CDATA["siriuspass"]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</when>
+			<when expression='#[payload.system == "fusion"]'>
+				<ee:transform doc:name="Transform Message" doc:id="0777329e-5a69-4068-b64d-ebd985ba5f83" >
+					<ee:message />
+					<ee:variables >
+						<ee:set-variable variableName="port" ><![CDATA[22004]]></ee:set-variable>
+						<ee:set-variable variableName="user" ><![CDATA["fusionuser"]]></ee:set-variable>
+						<ee:set-variable variableName="password" ><![CDATA["fusionpass"]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="Logger" doc:id="b2ef26f8-9893-4329-b3b5-d0777d4de4c9" message="Invalid system name"/>
+			</otherwise>
+		</choice>
+		<sftp:write doc:id="5cf5cb3e-6159-4e8d-aa11-8dd7ba60edcb" config-ref="SFTP_Config" path="#['/veeva/processed/' ++ vars.fileName]" doc:name="write to processed folder" />
+		<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  status: "success",
+  message: "File uploaded successfully"
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<set-payload value="#[{ 'status': 'success', 'filePath': vars.destPath }]" doc:name="Set Payload" doc:id="3ad44273-511f-45e7-a1b9-23cfbcdc25bd" />
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="9860893b-b1e7-4db3-a5e1-f4495ac228af" type="SFTP.*">
+				<ee:transform doc:name="Transform Message" doc:id="7a51dc94-6882-47a8-93df-ae4297e05001" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	
+	"applicationName": app.name,
+	"correlationId": vars.correlationID default correlationId,
+	"code": (error.errorType.namespace as String ++ ":" ++ error.errorType.identifier as String),
+	"description": error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="e0abcdd2-52e8-4700-a430-0bac2a1f93a8" type="EXPRESSION">
+				<ee:transform doc:name="Transform Message" doc:id="d537f34e-43c6-4627-8456-1fc1fdc3c5db" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	
+	"applicationName": app.name,
+	"correlationId": vars.correlationID default correlationId,
+	"code": (error.errorType.namespace as String ++ ":" ++ error.errorType.identifier as String),
+	"description": error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+    </flow>
+</mule>

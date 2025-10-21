@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="experience-cordillera-test-suite.xml" />
+	<munit:test name="experience-cordillera-test-suite-SFTP-To-JMS-FlowTest" doc:id="1db5d7fa-1170-4079-9b31-69b220f1309b" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="1ebefdf4-1ce3-4de9-b476-d01497480264" processor="sftp:listener">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="SFTP_Config" attributeName="config-ref" />
+					<munit-tools:with-attribute whereValue="/veeva/inprogress" attributeName="directory" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to SFTP-To-JMS-Flow" doc:id="46c444ac-efc2-4778-876d-0537dfab227e" name="SFTP-To-JMS-Flow"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="experience-cordillera-test-suite-SFTP-To-JMS-FlowTest1" doc:id="5f39dace-3c0a-4d34-acd5-d1b216c038b0" description="Test" expectedErrorType="JMS:CONNECTIVITY">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="db4f4db9-1ca0-49a0-972b-d06ff2d6386b" processor="jms:publish" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="JMS_Config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="JMS:CONNECTIVITY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to SFTP-To-JMS-Flow" doc:id="8e017bd6-477b-465e-91f2-41992d1e7102" name="SFTP-To-JMS-Flow" />
+		</munit:execution>
+	</munit:test>
+	<munit:test name="experience-cordillera-test-suite-SFTP-To-JMS-FlowTest2" doc:id="3bec61ab-ea32-42c6-905b-25783cc57a4a" description="Test" expectedErrorType="JMS:ILLEGAL_BODY">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="91dab2b3-267e-4017-8082-2d2836c2d683" processor="jms:publish" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="JMS_Config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="JMS:ILLEGAL_BODY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to SFTP-To-JMS-Flow" doc:id="4fa352c2-6bce-4e89-b017-fe812718f37d" name="SFTP-To-JMS-Flow" />
+		</munit:execution>
+	</munit:test>
+	<munit:test name="experience-cordillera-test-suite-SFTP-To-JMS-FlowTest3" doc:id="6b1610c1-fb33-4581-91e5-007ac0447992" description="Test" expectedErrorType="JMS:RETRY_EXHAUSTED">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="f590aac1-7d31-43b3-a1e1-e7cc51511d24" processor="jms:publish" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="JMS_Config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="JMS:RETRY_EXHAUSTED" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to SFTP-To-JMS-Flow" doc:id="e597b2fa-ea33-4819-80ec-5828a4f94630" name="SFTP-To-JMS-Flow" />
+		</munit:execution>
+	</munit:test>
+	<munit:test name="experience-cordillera-test-suite-SFTP-To-JMS-FlowTest4" doc:id="3789b87d-9214-45cf-879f-5e640e97f086" description="Test" expectedErrorType="JMS:DESTINATION_NOT_FOUND">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="765dab0f-042e-46cc-ab31-d1c4c79653e9" processor="jms:publish" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="JMS_Config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="JMS:DESTINATION_NOT_FOUND" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to SFTP-To-JMS-Flow" doc:id="fbccaa00-83f6-4282-bf16-54d6134633ba" name="SFTP-To-JMS-Flow" />
+		</munit:execution>
+	</munit:test>
+	<munit:test name="experience-cordillera-test-suite-SFTP-To-JMS-FlowTest5" doc:id="ef19aa99-e4da-41e4-ac0c-891270f931cc" description="Test" expectedErrorType="JMS:PUBLISHING">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="1143cda6-f542-4ce1-aca6-8afb41162da0" processor="jms:publish" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="JMS_Config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="JMS:PUBLISHING" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to SFTP-To-JMS-Flow" doc:id="4d016f81-f96e-4755-9ba7-cfe4bc6716ee" name="SFTP-To-JMS-Flow" />
+		</munit:execution>
+	</munit:test>
+
+
+</mule>

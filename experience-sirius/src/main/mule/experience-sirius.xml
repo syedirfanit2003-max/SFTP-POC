@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+      xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+      xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
+        http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <!-- SFTP Config -->
+    <sftp:config name="SFTP_Config" >
+        <sftp:connection workingDir="/" host="localhost" port="22003" username="siriususer" password="siriuspass"/>
+    </sftp:config>
+
+    <!-- JMS Config -->
+    <jms:config name="JMS_Config" >
+        <jms:active-mq-connection username="admin" password="admin">
+            <jms:factory-configuration brokerUrl="tcp://localhost:61616"/>
+        </jms:active-mq-connection>
+    </jms:config>
+
+    <!-- Flow -->
+	<flow name="SFTP-To-JMS-Flow">
+        <sftp:listener 
+            config-ref="SFTP_Config" 
+            directory="/veeva/inprogress" 
+            watermarkEnabled="true" autoDelete="true" applyPostActionWhenFailed="false">
+            <scheduling-strategy>
+                <fixed-frequency frequency="10000"/>
+            </scheduling-strategy>
+			<sftp:matcher filenamePattern="*.csv" />
+        
+</sftp:listener>
+
+        <logger level="INFO" doc:name="Logging fileName" doc:id="23699617-a7a4-48c5-b6c0-119b76b20dd8" message="File picked: #[attributes.fileName]"/>
+
+        <!-- Publish file content and path to JMS -->
+		<jms:publish config-ref="JMS_Config" destination="sftp.queue" doc:name="Publish file Content with metadata">
+			<jms:message>
+				<jms:body><![CDATA[#[%dw 2.0
+output application/json
+---
+{
+    filePath: attributes.path,
+    fileName: attributes.fileName,
+    system: "sirius",
+    content: payload
+}]]]></jms:body>
+			</jms:message>
+		</jms:publish>
+		<logger level="INFO" doc:name="Publish Success" doc:id="7d1a5dd7-9daf-4799-8ed8-80e0ccfda179" message="file #[attributes.fileName] content published successfully"/>
+		<error-handler ref="siriusErrorHandlerError_Handler" />
+		
+    
+</flow>
+
+</mule>

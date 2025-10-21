@@ -5,8 +5,8 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<error-handler name="GlobalErroru2k2Error_Handler" doc:id="5a2ae1e4-499f-44cc-837e-44644e69c89d" >
-		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="18dd3f5a-d35b-4170-a0d1-f3d9eb81157f" type="JMS:CONNECTIVITY" >
-			<ee:transform doc:name="Transform Message" doc:id="d5c46b93-1106-416b-894c-f952ea2b9d0a" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="5a948048-6475-4596-9f2d-caed256f89d4" type="JMS:*" >
+			<ee:transform doc:name="Transform Message" doc:id="e13ea78e-ca54-4fbe-ac28-b772d0d2b9ca" >
 				<ee:message >
 					<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -21,8 +21,8 @@ output application/json
 				</ee:message>
 			</ee:transform>
 		</on-error-propagate>
-		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate1" doc:id="ab84693f-7b3c-4893-ae7a-20e88b2c3650" type="JMS:DESTINATION_NOT_FOUND" >
-			<ee:transform doc:name="Transform Message" doc:id="7e057edc-8532-402f-a27a-0bbc454dbab0" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="d7ef7ad7-38a7-42c9-9306-b0cb17f164d4" type="EXPRESSION" >
+			<ee:transform doc:name="Transform Message" doc:id="97976909-68c6-40da-91c8-ff6b8dfd10ab" >
 				<ee:message >
 					<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -37,40 +37,8 @@ output application/json
 				</ee:message>
 			</ee:transform>
 		</on-error-propagate>
-		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate2" doc:id="1123b228-0052-445a-8267-5828888080a6" type="JMS:ILLEGAL_BODY" >
-			<ee:transform doc:name="Transform Message" doc:id="4abc8fdf-aa0c-4c80-95a4-1db72b8d9e4b" >
-				<ee:message >
-					<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	
-	"applicationName": app.name,
-	"correlationId": vars.correlationID default correlationId,
-	"code": (error.errorType.namespace as String ++ ":" ++ error.errorType.identifier as String),
-	"description": error.description
-}]]></ee:set-payload>
-				</ee:message>
-			</ee:transform>
-		</on-error-propagate>
-		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate3" doc:id="34691216-266f-449f-a378-94eed3a7fe26" type="JMS:PUBLISHING" >
-			<ee:transform doc:name="Transform Message" doc:id="75205f3e-aedc-4ef2-b211-59bbe633abc4" >
-				<ee:message >
-					<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	
-	"applicationName": app.name,
-	"correlationId": vars.correlationID default correlationId,
-	"code": (error.errorType.namespace as String ++ ":" ++ error.errorType.identifier as String),
-	"description": error.description
-}]]></ee:set-payload>
-				</ee:message>
-			</ee:transform>
-		</on-error-propagate>
-		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate4" doc:id="70630b43-f2a7-42f7-ac40-876f7da73f6b" type="JMS:RETRY_EXHAUSTED" >
-			<ee:transform doc:name="Transform Message" doc:id="ee0b229d-6456-43ec-98a0-5628ec48d763" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="ce0ec990-d0f0-4f6d-b471-711fc5212a3e" type="STREAM_MAXIMUM_SIZE_EXCEEDED" >
+			<ee:transform doc:name="Transform Message" doc:id="e652e5c4-933a-475a-8a9b-e8196df1e0a5" >
 				<ee:message >
 					<ee:set-payload ><![CDATA[%dw 2.0
 output application/json

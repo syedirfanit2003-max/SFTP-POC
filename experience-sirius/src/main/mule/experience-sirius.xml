@@ -11,7 +11,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 
     <!-- SFTP Config -->
     <sftp:config name="SFTP_Config" >
-        <sftp:connection workingDir="/" host="localhost" port="22003" username="siriususer" password="siriuspass"/>
+        <sftp:connection workingDir="/" host="localhost" port="22003" username="siriususer" password="pass"/>
     </sftp:config>
 
     <!-- JMS Config -->
@@ -34,7 +34,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
         
 </sftp:listener>
 
-        <logger level="INFO" doc:name="Logging fileName" doc:id="23699617-a7a4-48c5-b6c0-119b76b20dd8" message="File picked: #[attributes.fileName]"/>
+        <logger level="INFO" doc:name="Logging fileName" doc:id="23699617-a7a4-48c5-b6c0-119b76b20dd8" message='#[" File picked:"++ attributes.fileName]'/>
 
         <!-- Publish file content and path to JMS -->
 		<jms:publish config-ref="JMS_Config" destination="sftp.queue" doc:name="Publish file Content with metadata">
@@ -50,8 +50,9 @@ output application/json
 }]]]></jms:body>
 			</jms:message>
 		</jms:publish>
-		<logger level="INFO" doc:name="Publish Success" doc:id="7d1a5dd7-9daf-4799-8ed8-80e0ccfda179" message="file #[attributes.fileName] content published successfully"/>
+		<logger level="INFO" doc:name="Publish Success" doc:id="7d1a5dd7-9daf-4799-8ed8-80e0ccfda179" message='#[attributes.fileName ++ "published successfully"]'/>
 		<error-handler ref="siriusErrorHandlerError_Handler" />
+		
 		
     
 </flow>

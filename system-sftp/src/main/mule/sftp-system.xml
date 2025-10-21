@@ -5,7 +5,7 @@ http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sft
         <http:listener-connection host="0.0.0.0" port="8081" />
     </http:listener-config>
     <apikit:config name="sftp-system-config" api="sftp-system.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
-    <sftp:config name="SFTP_Config" doc:name="SFTP Config" doc:id="0d68f532-aebc-459b-bbf4-5fdc5adcfcd4" >
+    <sftp:config name="SFTP_Config" doc:name="SFTP Config" doc:id="a8f41eec-3331-4cff-9ff9-5bf76dea2290" >
 		<sftp:connection workingDir="/" host="localhost" port="#[vars.port]" username="#[vars.user]" password="pass" />
 	</sftp:config>
 	<flow name="sftp-system-main">
@@ -19,90 +19,17 @@ http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sft
             </http:error-response>
         </http:listener>
         <apikit:router config-ref="sftp-system-config" />
-        <error-handler>
-            <on-error-propagate type="APIKIT:BAD_REQUEST">
-                <ee:transform doc:name="Transform Message">
-                    <ee:message>
-                        <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{message: "Bad request"}]]></ee:set-payload>
-                    </ee:message>
-                    <ee:variables>
-                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
-                    </ee:variables>
-                </ee:transform>
-            </on-error-propagate>
-            <on-error-propagate type="APIKIT:NOT_FOUND">
-                <ee:transform doc:name="Transform Message">
-                    <ee:message>
-                        <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{message: "Resource not found"}]]></ee:set-payload>
-                    </ee:message>
-                    <ee:variables>
-                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
-                    </ee:variables>
-                </ee:transform>
-            </on-error-propagate>
-            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
-                <ee:transform doc:name="Transform Message">
-                    <ee:message>
-                        <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{message: "Method not allowed"}]]></ee:set-payload>
-                    </ee:message>
-                    <ee:variables>
-                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
-                    </ee:variables>
-                </ee:transform>
-            </on-error-propagate>
-            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
-                <ee:transform doc:name="Transform Message">
-                    <ee:message>
-                        <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{message: "Not acceptable"}]]></ee:set-payload>
-                    </ee:message>
-                    <ee:variables>
-                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
-                    </ee:variables>
-                </ee:transform>
-            </on-error-propagate>
-            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
-                <ee:transform doc:name="Transform Message">
-                    <ee:message>
-                        <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{message: "Unsupported media type"}]]></ee:set-payload>
-                    </ee:message>
-                    <ee:variables>
-                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
-                    </ee:variables>
-                </ee:transform>
-            </on-error-propagate>
-            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
-                <ee:transform doc:name="Transform Message">
-                    <ee:message>
-                        <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{message: "Not Implemented"}]]></ee:set-payload>
-                    </ee:message>
-                    <ee:variables>
-                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
-                    </ee:variables>
-                </ee:transform>
-            </on-error-propagate>
-        </error-handler>
+		<error-handler ref="globalErrorHandlerError_Handler" />
     </flow>
-    <flow name="post:\api\(system):application\json:sftp-system-config">
-		<set-variable value="#[payload.fileName]" doc:name="Set Variable" doc:id="a99db77a-8bfb-4d3b-9b9e-a47f96cd4b33" variableName="fileName" />
-		<ee:transform doc:name="json to csv" doc:id="8ebfe422-3ce9-4de6-b914-c335d54e3bf2" >
+    <flow name="post:\(system):application\json:sftp-system-config">
+		<ee:transform doc:name="Transform Message" doc:id="2d556c53-ac12-4ee8-b262-2d8d9b0bf2cc" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="fileName" ><![CDATA[payload.fileName]]></ee:set-variable>
+				<ee:set-variable variableName="system" ><![CDATA[payload.system]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="json to csv" doc:id="fc93ae67-f634-4194-bd50-25e1e0f8f8ff" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/csv
@@ -110,11 +37,10 @@ output application/csv
 payload.content]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<choice doc:name="Choice" doc:id="7ddd30e8-c6ad-4a5d-a128-f4299099380b" >
-			<when expression='#[payload.system == "u2k2"]'>
-				<ee:transform doc:name="Transform Message" doc:id="11102e75-b28f-45ba-b747-e15764df1c44" >
-					<ee:message >
-					</ee:message>
+		<choice doc:name="Choice" doc:id="4c276a5a-e78a-421b-bd15-437ec5ae685c" >
+			<when expression='#[vars.system == "u2k2"]' >
+				<ee:transform doc:name="u2k2SftpConfigurations" doc:id="fce884ee-9004-4f41-9e87-c593a8dac11c" >
+					<ee:message />
 					<ee:variables >
 						<ee:set-variable variableName="port" ><![CDATA[22001]]></ee:set-variable>
 						<ee:set-variable variableName="user" ><![CDATA["u2k2user"]]></ee:set-variable>
@@ -122,8 +48,8 @@ payload.content]]></ee:set-payload>
 					</ee:variables>
 				</ee:transform>
 			</when>
-			<when expression='#[payload.system == "cordillera"]'>
-				<ee:transform doc:name="Transform Message" doc:id="a7095d8f-acdc-4b5d-8a47-f15380df6ef3" >
+			<when expression='#[vars.system == "cordillera"]' >
+				<ee:transform doc:name="cordilleraSftpConfigurations" doc:id="92d78f3b-1fda-47ff-86c1-f476e494526b" >
 					<ee:message />
 					<ee:variables >
 						<ee:set-variable variableName="port" ><![CDATA[22002]]></ee:set-variable>
@@ -132,8 +58,8 @@ payload.content]]></ee:set-payload>
 					</ee:variables>
 				</ee:transform>
 			</when>
-			<when expression='#[payload.system == "sirius"]'>
-				<ee:transform doc:name="Transform Message" doc:id="b93c6c11-bb39-4515-a47f-f12048ebd6f9" >
+			<when expression='#[vars.system == "sirius"]' >
+				<ee:transform doc:name="siriusSftpConfigurations" doc:id="768b9f85-f546-4a70-8418-333db66575f8" >
 					<ee:message />
 					<ee:variables >
 						<ee:set-variable variableName="port" ><![CDATA[22003]]></ee:set-variable>
@@ -142,8 +68,8 @@ payload.content]]></ee:set-payload>
 					</ee:variables>
 				</ee:transform>
 			</when>
-			<when expression='#[payload.system == "fusion"]'>
-				<ee:transform doc:name="Transform Message" doc:id="0777329e-5a69-4068-b64d-ebd985ba5f83" >
+			<when expression='#[vars.system == "fusion"]' >
+				<ee:transform doc:name="fusionSftpConfigurations" doc:id="b69781ec-615d-4c56-8978-076946d4f38f" >
 					<ee:message />
 					<ee:variables >
 						<ee:set-variable variableName="port" ><![CDATA[22004]]></ee:set-variable>
@@ -152,11 +78,11 @@ payload.content]]></ee:set-payload>
 					</ee:variables>
 				</ee:transform>
 			</when>
-			<otherwise>
-				<logger level="INFO" doc:name="Logger" doc:id="b2ef26f8-9893-4329-b3b5-d0777d4de4c9" message="Invalid system name"/>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="c7340eab-839d-46ca-af84-adfcbc912bd6" message="Invalid system name" />
 			</otherwise>
 		</choice>
-		<sftp:write doc:id="5cf5cb3e-6159-4e8d-aa11-8dd7ba60edcb" config-ref="SFTP_Config" path="#['/veeva/processed/' ++ vars.fileName]" doc:name="write to processed folder" />
+		<sftp:write doc:id="f1c7925c-9411-42ee-a30b-9b1adb0fdcbf" config-ref="SFTP_Config" path="#['/veeva/processed/' ++ vars.fileName]" doc:name="writeToProcessedFolder" />
 		<ee:transform doc:name="Transform Message">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
@@ -168,56 +94,7 @@ output application/json
 } as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
             </ee:message>
         </ee:transform>
-		<set-payload value="#[{ 'status': 'success', 'filePath': vars.destPath }]" doc:name="Set Payload" doc:id="3ad44273-511f-45e7-a1b9-23cfbcdc25bd" />
-		<error-handler >
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="9860893b-b1e7-4db3-a5e1-f4495ac228af" type="SFTP.*">
-				<ee:transform doc:name="Transform Message" doc:id="7a51dc94-6882-47a8-93df-ae4297e05001" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	
-	"applicationName": app.name,
-	"correlationId": vars.correlationID default correlationId,
-	"code": (error.errorType.namespace as String ++ ":" ++ error.errorType.identifier as String),
-	"description": error.description
-}]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-			</on-error-propagate>
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="e0abcdd2-52e8-4700-a430-0bac2a1f93a8" type="EXPRESSION">
-				<ee:transform doc:name="Transform Message" doc:id="d537f34e-43c6-4627-8456-1fc1fdc3c5db" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	
-	"applicationName": app.name,
-	"correlationId": vars.correlationID default correlationId,
-	"code": (error.errorType.namespace as String ++ ":" ++ error.errorType.identifier as String),
-	"description": error.description
-}]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-			</on-error-propagate>
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="af386fff-5ef7-4e0e-93ce-7e10a920e07f" type="STREAM_MAXIMUM_SIZE_EXCEEDED">
-				<ee:transform doc:name="Transform Message" doc:id="3223f447-1ddf-46c2-bac8-2225e1d4a609" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	
-	"applicationName": app.name,
-	"correlationId": vars.correlationID default correlationId,
-	"code": (error.errorType.namespace as String ++ ":" ++ error.errorType.identifier as String),
-	"description": error.description
-}]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-			</on-error-propagate>
-		</error-handler>
+		<set-payload value="#[{ 'status': 'success', 'filePath': vars.destPath }]" doc:name="Set Payload" doc:id="4c98f4e0-7710-48ea-9d01-31b4ddda0d81" />
+		<error-handler ref="globalErrorHandlerError_Handler" />
     </flow>
 </mule>

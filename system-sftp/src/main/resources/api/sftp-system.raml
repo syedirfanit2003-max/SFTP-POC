@@ -13,10 +13,8 @@ types:
     type: object
     properties:
       fileName: string
-      content: string
     example:
       fileName: "data.csv"
-      content: "SGVsbG8gV29ybGQ="
 
   FileResponse:
     type: object
@@ -38,7 +36,7 @@ types:
       code: "VALIDATION_ERROR"
       message: "Invalid system parameter"
 
-/api/{system}:
+/{system}:
   uriParameters:
     system:
       type: string

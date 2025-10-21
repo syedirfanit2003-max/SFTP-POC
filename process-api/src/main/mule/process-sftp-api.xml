@@ -26,45 +26,26 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		</email:smtp-connection>
 	</email:smtp-config>
 
-    <http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="461389a0-bd37-4ee9-bccc-feb46bd76463" basePath="/api" >
+    <http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="461389a0-bd37-4ee9-bccc-feb46bd76463" basePath="/api">
 		<http:request-connection host="localhost" port="8081" />
 	</http:request-config>
 	<flow name="Consumer-Flow" doc:id="a0c404a3-382a-4f36-820d-d079eaeb1698">
-        <jms:listener config-ref="JMS_Config" destination="sftp.queue" doc:name="pick messages from sftp.queue"/>
+        <jms:listener config-ref="JMS_Config" destination="sftp.queue" doc:name="picking messages from sftp.queue"/>
 
         <logger level="INFO" message='#["Received file" ++ payload.fileName]' doc:name="loggingFileName"/>
 		<set-variable value="#[payload.system]" doc:name="captureSystemName" doc:id="0ac605b1-c15d-4a04-b5d8-fa6061df3f62" variableName="system"/>
 		<http:request method="POST" doc:name="Request to endpoint in system layer" doc:id="6334692f-3205-4665-8764-2826be68b485" config-ref="HTTP_Request_configuration" responseTimeout="500000" path='#["/" ++ vars.system]'>
-			<http:query-params><![CDATA[#[output application/java
----
-{
-	"" : ""
-}]]]></http:query-params>
+			
 		</http:request>
-		<choice doc:name="Choice" doc:id="baf99d54-ac5f-4857-89d4-97f8eb84bbd0" >
-			<when expression="#[attributes.statusCode == 200]" >
-				<logger level="INFO" doc:name="Logger file move success" doc:id="73f91382-cabd-4890-8794-7dd7d0cc02ee" message="File moved successfully" />
-				<email:send doc:name="Send" doc:id="c7965dd3-e2ec-4cd0-bd3b-07070b1a4cca" config-ref="SMTP_Config" fromAddress="syedirfanit2003@gmail.com" >
-					<email:to-addresses >
+		<logger level="INFO" doc:name="fileProcessedSuccessfully" doc:id="73f91382-cabd-4890-8794-7dd7d0cc02ee" message="File moved successfully" />
+		<email:send doc:name="successMessageViaEmail" doc:id="c7965dd3-e2ec-4cd0-bd3b-07070b1a4cca" config-ref="SMTP_Config" fromAddress="syedirfanit2003@gmail.com">
+					<email:to-addresses>
 						<email:to-address value="syedirfanit20@gmail.com" />
 					</email:to-addresses>
-					<email:body >
-						<email:content ><![CDATA[File moved successfully to processed folder.]]></email:content>
+					<email:body>
+						<email:content><![CDATA[File moved successfully to processed folder.]]></email:content>
 					</email:body>
 				</email:send>
-			</when>
-			<otherwise >
-				<logger level="ERROR" doc:name="Logger file move failed" doc:id="ef609cd7-8c28-439c-8b7e-2c83833cf6a9" message="File move failed" />
-				<email:send doc:name="Send" doc:id="f7322224-ef55-4683-9cf8-dde9d4543bb0" config-ref="SMTP_Config" fromAddress="syedirfanit2003@gmail.com" >
-					<email:to-addresses >
-						<email:to-address value="syedirfanit20@gmail.com" />
-					</email:to-addresses>
-					<email:body >
-						<email:content ><![CDATA[File failed to move.]]></email:content>
-					</email:body>
-				</email:send>
-			</otherwise>
-		</choice>
 		<error-handler ref="GlobalErrorProcessError_Handler" />
 		
     </flow>

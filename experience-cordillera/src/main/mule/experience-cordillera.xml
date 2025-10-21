@@ -10,7 +10,7 @@
 
     <!-- SFTP Config -->
     <sftp:config name="SFTP_Config" >
-        <sftp:connection workingDir="/" host="localhost" port="22002" username="cordillerauser" password="cordillerapass"/>
+        <sftp:connection workingDir="/" host="localhost" port="22002" username="cordillerauser" password="pass"/>
     </sftp:config>
 
     <!-- JMS Config -->
@@ -33,10 +33,9 @@
         
 </sftp:listener>
 
-        <!-- [STUDIO:"Logging fileName"]<logger level="INFO" doc:name="Logging fileName" doc:id="af18a76b-4799-4aeb-8cbc-2033238f2f18" message="File picked: #[attributes.fileName&#93;"/> [STUDIO] -->
-
         <!-- Publish file content and path to JMS -->
-        <jms:publish 
+        <logger level="INFO" doc:name="loggingFileName" doc:id="2f4eeba6-5623-4e51-930f-7887c1380ffb" message='#[" File picked:"++ attributes.fileName]'/>
+		<jms:publish 
             config-ref="JMS_Config" 
             destination="sftp.queue" doc:name="Publishing file content">
 			<jms:message >
@@ -51,7 +50,7 @@ output application/json
 }]]]></jms:body>
 			</jms:message>
 		</jms:publish>
-		<logger level="INFO" doc:name="publish success" doc:id="812302df-8c45-4007-8726-270c15c3cd70" message="file #[attributes.fileName] published successfully"/>
+		<logger level="INFO" doc:name="publish success" doc:id="812302df-8c45-4007-8726-270c15c3cd70" message='#[attributes.fileName ++ "published successfully"]'/>
 		<error-handler ref="GlobalErrorCordilleraError_Handler" />
     
 </flow>

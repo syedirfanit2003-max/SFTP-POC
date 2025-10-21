@@ -11,7 +11,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 
     <!-- SFTP Config -->
     <sftp:config name="SFTP_Config" >
-        <sftp:connection workingDir="/" host="localhost" port="22001" username="u2k2user" password="u2k2pass"/>
+        <sftp:connection workingDir="/" host="localhost" port="22001" username="u2k2user" password="pass"/>
     </sftp:config>
 
     <!-- JMS Config -->
@@ -38,7 +38,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
         <!-- Publish file content and path to JMS -->
         <jms:publish 
             config-ref="JMS_Config" 
-            destination="sftp.queue" doc:name="Publish file content with metadata">
+            destination="sftp.queue" doc:name="publish file content with metadata">
 			<jms:message >
 				<jms:body ><![CDATA[#[%dw 2.0
 output application/json

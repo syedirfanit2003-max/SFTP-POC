@@ -10,7 +10,7 @@
 
     <!-- SFTP Config -->
     <sftp:config name="SFTP_Config" >
-        <sftp:connection workingDir="/" host="localhost" port="22004" username="fusionuser" password="fusionpass"/>
+        <sftp:connection workingDir="/" host="localhost" port="22004" username="fusionuser" password="pass"/>
     </sftp:config>
 
     <!-- JMS Config -->

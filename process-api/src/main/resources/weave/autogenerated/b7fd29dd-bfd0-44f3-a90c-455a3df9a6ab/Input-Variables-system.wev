@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_b7fd29dd_bfd0_44f3_a90c_455a3df9a6ab_Input_Variables_system = Any
+

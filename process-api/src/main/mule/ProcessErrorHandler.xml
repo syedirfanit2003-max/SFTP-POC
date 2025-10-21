@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<error-handler name="GlobalErrorProcessError_Handler" doc:id="47741f66-a302-4587-9c08-f20c7628be9c" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="10183c84-393b-4441-ad32-bfbed7490d0c" type="EMAIL:CONNECTIVITY" >
+			<ee:transform doc:name="Transform Message" doc:id="83bbfd29-a582-4123-ad26-655fc608167c" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	
+	"applicationName": app.name,
+	"correlationId": vars.correlationID default correlationId,
+	"code": (error.errorType.namespace as String ++ ":" ++ error.errorType.identifier as String),
+	"description": error.description
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate1" doc:id="36183adc-ddb5-429f-bb2f-96216b69471c" type="EMAIL:SEND" >
+			<ee:transform doc:name="Transform Message" doc:id="e1805b34-aa07-4fa1-8f89-29d8ac6dde13" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	
+	"applicationName": app.name,
+	"correlationId": vars.correlationID default correlationId,
+	"code": (error.errorType.namespace as String ++ ":" ++ error.errorType.identifier as String),
+	"description": error.description
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate4" doc:id="2701f064-7dce-42e4-bce9-3edffef8be5a" type="HTTP:CONNECTIVITY" >
+			<ee:transform doc:name="Transform Message" doc:id="6eca0515-b4a2-415d-a1de-c566880aaada" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	
+	"applicationName": app.name,
+	"correlationId": vars.correlationID default correlationId,
+	"code": (error.errorType.namespace as String ++ ":" ++ error.errorType.identifier as String),
+	"description": error.description
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate6" doc:id="355e7c06-a955-43b2-b0fe-e09d9813d7cf" type="HTTP:METHOD_NOT_ALLOWED" >
+			<ee:transform doc:name="Transform Message" doc:id="5cc9bf0a-b397-42dd-b77f-b5b083865436" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	
+	"applicationName": app.name,
+	"correlationId": vars.correlationID default correlationId,
+	"code": (error.errorType.namespace as String ++ ":" ++ error.errorType.identifier as String),
+	"description": error.description
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-propagate>
+	</error-handler>
+</mule>
